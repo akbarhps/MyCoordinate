@@ -53,22 +53,42 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    @SuppressLint("MissingPermission")
+    fun getLastLocation() = viewModelScope.launch {
+        try {
+            _location.value = mFusedLocationClient.lastLocation.await()
+        } catch (e: Exception) {
+            _mainUiState.value = MainUiState.Error("No last location found")
+        }
+    }
+
+    @SuppressLint("MissingPermission")
     fun startLocationUpdateListener() {
-        listenToLocationUpdates()
+        val mLocationRequest    = LocationRequest().also {
+            it.priority         = LocationRequest.PRIORITY_HIGH_ACCURACY
+            it.interval         = Constants.DEFAULT_INTERVAL
+            it.fastestInterval  = Constants.FASTEST_INTERVAL
+            it.maxWaitTime      = Constants.MAX_WAIT_TIME
+        }
+        mFusedLocationClient.requestLocationUpdates(
+            mLocationRequest, mLocationCallback,
+            Looper.myLooper()
+        )
+    }
+
+    private val mLocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            _location.value = locationResult.lastLocation
+        }
+        override fun onLocationAvailability(locationAvailability: LocationAvailability) {
+            if (!locationAvailability.isLocationAvailable) {
+                _mainUiState.value = MainUiState.Error("No location available")
+            }
+        }
     }
 
     fun removeLocationUpdateListener() {
         mFusedLocationClient.removeLocationUpdates(mLocationCallback)
-    }
-
-    private fun setUiState(state: String, errorMessage: String = "") {
-        _mainUiState.value = when (state) {
-            Constants.IDLE_STATE        -> MainUiState.Idle
-            Constants.LOADING_STATE     -> MainUiState.Loading
-            Constants.SUCCESS_STATE     -> MainUiState.Success
-            Constants.ERROR_STATE       -> MainUiState.Error(errorMessage)
-            else                        -> MainUiState.Idle
-        }
     }
 
     private fun hasLocationPermission(): Boolean =
@@ -122,38 +142,8 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun getLastLocation() = viewModelScope.launch {
-        try {
-            _location.value = mFusedLocationClient.lastLocation.await()
-        } catch (e: Exception) {
-            Log.e(MAIN_VIEW_MODEL_TAG, "getLastLocation: ${e.message}", e)
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun listenToLocationUpdates() {
-        val mLocationRequest = LocationRequest().also {
-            it.priority         = LocationRequest.PRIORITY_HIGH_ACCURACY
-            it.interval         = Constants.DEFAULT_INTERVAL
-            it.fastestInterval  = Constants.FASTEST_INTERVAL
-        }
-        mFusedLocationClient.requestLocationUpdates(
-            mLocationRequest, mLocationCallback,
-            Looper.myLooper()
-        )
-    }
-
-    private val mLocationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            _location.value = locationResult.lastLocation
-        }
-    }
-
     abstract class MainUiState {
         object Idle                             : MainUiState()
-        object Loading                          : MainUiState()
-        object Success                          : MainUiState()
         data class Error(val message: String)   : MainUiState()
     }
 }
