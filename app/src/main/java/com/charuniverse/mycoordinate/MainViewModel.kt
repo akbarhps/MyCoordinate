@@ -1,44 +1,45 @@
 package com.charuniverse.mycoordinate
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.IntentSender
+import android.location.Location
 import android.location.LocationManager
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.charuniverse.mycoordinate.utils.Constants
 import com.charuniverse.mycoordinate.utils.Constants.MAIN_VIEW_MODEL_TAG
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationSettingsStatusCodes
+import com.google.android.gms.location.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import pub.devrel.easypermissions.EasyPermissions
 
 class MainViewModel : ViewModel() {
 
     private lateinit var activity: Activity
 
+    private lateinit var mFusedLocationClient:
+            FusedLocationProviderClient
+
     private val _mainUiState = MutableLiveData<MainUiState>()
     val mainUiState: LiveData<MainUiState> = _mainUiState
 
-    private fun setUiState(state: String, errorMessage: String = "") {
-        _mainUiState.value = when (state) {
-            Constants.IDLE_STATE        -> MainUiState.Idle
-            Constants.LOADING_STATE     -> MainUiState.Loading
-            Constants.SUCCESS_STATE     -> MainUiState.Success
-            Constants.ERROR_STATE       -> MainUiState.Error(errorMessage)
-            else                        -> MainUiState.Idle
-        }
-    }
+    private val _location = MutableLiveData<Location>()
+    val location: LiveData<Location> = _location
 
     fun initViewModel(activity: Activity) {
         this.activity = activity
+        mFusedLocationClient = LocationServices
+            .getFusedLocationProviderClient(activity)
     }
 
     fun checkLocationPermission() {
@@ -49,6 +50,20 @@ class MainViewModel : ViewModel() {
         if (!hasLocationEnable()) {
             requestEnableLocation()
             return
+        }
+    }
+
+    fun startLocationUpdateListener() {
+        listenToLocationUpdates()
+    }
+
+    private fun setUiState(state: String, errorMessage: String = "") {
+        _mainUiState.value = when (state) {
+            Constants.IDLE_STATE        -> MainUiState.Idle
+            Constants.LOADING_STATE     -> MainUiState.Loading
+            Constants.SUCCESS_STATE     -> MainUiState.Success
+            Constants.ERROR_STATE       -> MainUiState.Error(errorMessage)
+            else                        -> MainUiState.Idle
         }
     }
 
@@ -100,6 +115,34 @@ class MainViewModel : ViewModel() {
                     }
                 }
             }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getLastLocation() = viewModelScope.launch {
+        try {
+            _location.value = mFusedLocationClient.lastLocation.await()
+        } catch (e: Exception) {
+            Log.e(MAIN_VIEW_MODEL_TAG, "getLastLocation: ${e.message}", e)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun listenToLocationUpdates() {
+        val mLocationRequest = LocationRequest().also {
+            it.priority         = LocationRequest.PRIORITY_HIGH_ACCURACY
+            it.interval         = Constants.DEFAULT_INTERVAL
+            it.fastestInterval  = Constants.FASTEST_INTERVAL
+        }
+        mFusedLocationClient.requestLocationUpdates(
+            mLocationRequest, mLocationCallback,
+            Looper.myLooper()
+        )
+    }
+
+    private val mLocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            _location.value = locationResult.lastLocation
         }
     }
 

@@ -8,5 +8,8 @@ object Constants {
     const val SUCCESS_STATE         = "UI_SUCCESS_STATE"
     const val ERROR_STATE           = "UI_ERROR_STATE"
 
+    const val DEFAULT_INTERVAL       = 10_000L // in milis
+    const val FASTEST_INTERVAL       = 3_000L  // in milis
+
     const val LOCATION_PERMISSION_REQUEST_CODE = 1
 }
