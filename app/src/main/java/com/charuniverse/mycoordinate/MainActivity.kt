@@ -1,5 +1,6 @@
 package com.charuniverse.mycoordinate
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -9,6 +10,8 @@ import com.google.android.gms.location.LocationRequest
 import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
@@ -26,6 +29,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             }
 
         buttonClickListener()
+        locationListener()
     }
 
     private fun buttonClickListener() {
@@ -40,6 +44,25 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         btnRemoveLocUpdates.setOnClickListener {
             viewModel.removeLocationUpdateListener()
         }
+    }
+
+    private fun locationListener() {
+        viewModel.location.observe(this, {
+            val date = convertMilisToDate(it.time)
+            val formattedLocation = """
+                Time : $date
+                Latitude : ${it.latitude}
+                Longitude : ${it.longitude}
+            """.trimIndent()
+            textView.text = formattedLocation
+        })
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private fun convertMilisToDate(timeInMillis: Long): String {
+        val sdf     = SimpleDateFormat("MMMM/dd/yyyy H:mm:ss")
+        val netDate = Date(timeInMillis)
+        return sdf.format(netDate)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
