@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.charuniverse.mycoordinate.dialogs.LocationDialog
 import com.charuniverse.mycoordinate.dialogs.PermissionDialog
 import com.google.android.gms.location.LocationRequest
 import kotlinx.android.synthetic.main.activity_main.*
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         val hasUserEnableLocation = resultCode == Activity.RESULT_OK
         if (requestCode == LocationRequest.PRIORITY_HIGH_ACCURACY) {
             if (!hasUserEnableLocation) {
-                //TODO: Show dialog why app need location enabled
+                LocationDialog().show(supportFragmentManager, null)
             }
         }
     }
@@ -85,9 +86,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
-    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
-        viewModel.getLastLocation()
-    }
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {}
 
     override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
