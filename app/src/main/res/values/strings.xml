@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MyCoordinate</string>
+
+    <string name="get_last_location">Get Last Location</string>
+    <string name="listen_location_updates">Listen Location Updates</string>
+    <string name="remove_location_updates">Remove Location Updates</string>
 </resources>

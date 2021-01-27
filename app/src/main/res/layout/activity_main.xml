@@ -4,15 +4,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="18dp"
     tools:context=".MainActivity">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/btnGetLastLoc"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnGetLastLoc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/get_last_location"
+        app:layout_constraintBottom_toTopOf="@+id/btnListenLocUpdates" />
+
+    <Button
+        android:id="@+id/btnListenLocUpdates"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/listen_location_updates"
+        app:layout_constraintBottom_toTopOf="@+id/btnRemoveLocUpdates" />
+
+    <Button
+        android:id="@+id/btnRemoveLocUpdates"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/remove_location_updates"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
