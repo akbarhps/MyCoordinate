@@ -13,15 +13,4 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
-
-    <style name="DialogAnimation" parent="@android:style/Theme.Dialog">
-        <item name="android:windowAnimationStyle">@style/DialogInOut</item>
-        <item name="colorControlHighlight">@color/white</item>
-    </style>
-
-    <style name="DialogInOut">
-        <item name="android:windowEnterAnimation">@anim/slide_bottom_to_top</item>
-        <item name="android:windowExitAnimation">@anim/slide_top_to_bottom</item>
-        <item name="colorControlHighlight">@color/white</item>
-    </style>
 </resources>
