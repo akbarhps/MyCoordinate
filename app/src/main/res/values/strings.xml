@@ -4,4 +4,7 @@
     <string name="get_last_location">Get Last Location</string>
     <string name="listen_location_updates">Start Location Updates</string>
     <string name="remove_location_updates">Remove Location Updates</string>
+
+    <string name="dialog_no_permission">Apparently this app need your location permission :(</string>
+    <string name="btn_no_permission">Allow Permission</string>
 </resources>

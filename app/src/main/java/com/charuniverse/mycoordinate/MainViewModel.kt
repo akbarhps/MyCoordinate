@@ -53,6 +53,57 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    private fun hasLocationPermission(): Boolean =
+        EasyPermissions.hasPermissions(
+            activity.applicationContext,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+
+    fun requestLocationPermission() {
+        ActivityCompat.requestPermissions(
+            activity, arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            ),
+            Constants.LOCATION_PERMISSION_REQUEST_CODE
+        )
+    }
+
+    private fun hasLocationEnable(): Boolean {
+        val locationManager = activity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    fun requestEnableLocation() {
+        val locationRequest = LocationRequest.create()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+        val result = LocationServices.getSettingsClient(activity)
+            .checkLocationSettings(builder.build())
+
+        result.addOnCompleteListener { task ->
+            try {
+                task.getResult(ApiException::class.java)
+            } catch (exception: ApiException) {
+                when (exception.statusCode) {
+                    LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
+                        try {
+                            val resolvable = exception as ResolvableApiException
+                            resolvable.startResolutionForResult(
+                                activity, LocationRequest.PRIORITY_HIGH_ACCURACY
+                            )
+                        } catch (e: IntentSender.SendIntentException) {
+                            Log.e(TAG, "requestEnableLocation: ${e.message}", e)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @SuppressLint("MissingPermission")
     fun getLastLocation() = viewModelScope.launch {
         try {
@@ -88,56 +139,5 @@ class MainViewModel : ViewModel() {
 
     fun removeLocationUpdateListener() {
         mFusedLocationClient.removeLocationUpdates(mLocationCallback)
-    }
-
-    private fun hasLocationPermission(): Boolean =
-        EasyPermissions.hasPermissions(
-            activity.applicationContext,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        )
-
-    private fun requestLocationPermission() {
-        ActivityCompat.requestPermissions(
-            activity, arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-            ),
-            Constants.LOCATION_PERMISSION_REQUEST_CODE
-        )
-    }
-
-    private fun hasLocationEnable(): Boolean {
-        val locationManager = activity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    }
-
-    private fun requestEnableLocation() {
-        val locationRequest = LocationRequest.create()
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-        val result = LocationServices.getSettingsClient(activity)
-            .checkLocationSettings(builder.build())
-
-        result.addOnCompleteListener { task ->
-            try {
-                task.getResult(ApiException::class.java)
-            } catch (exception: ApiException) {
-                when (exception.statusCode) {
-                    LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
-                        try {
-                            val resolvable = exception as ResolvableApiException
-                            resolvable.startResolutionForResult(
-                                activity, LocationRequest.PRIORITY_HIGH_ACCURACY
-                            )
-                        } catch (e: IntentSender.SendIntentException) {
-                            Log.e(TAG, "requestEnableLocation: ${e.message}", e)
-                        }
-                    }
-                }
-            }
-        }
     }
 }
