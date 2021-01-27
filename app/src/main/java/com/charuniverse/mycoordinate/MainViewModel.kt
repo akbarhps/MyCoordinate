@@ -15,7 +15,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charuniverse.mycoordinate.utils.Constants
-import com.charuniverse.mycoordinate.utils.Constants.MAIN_VIEW_MODEL_TAG
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -25,13 +24,14 @@ import pub.devrel.easypermissions.EasyPermissions
 
 class MainViewModel : ViewModel() {
 
+    companion object {
+        private const val TAG = "MainViewModel"
+    }
+
     private lateinit var activity: Activity
 
     private lateinit var mFusedLocationClient:
             FusedLocationProviderClient
-
-    private val _mainUiState = MutableLiveData<MainUiState>()
-    val mainUiState: LiveData<MainUiState> = _mainUiState
 
     private val _location = MutableLiveData<Location>()
     val location: LiveData<Location> = _location
@@ -58,7 +58,7 @@ class MainViewModel : ViewModel() {
         try {
             _location.value = mFusedLocationClient.lastLocation.await()
         } catch (e: Exception) {
-            _mainUiState.value = MainUiState.Error("No last location found")
+            Log.e(TAG, "getLastLocation: ${e.message}", e)
         }
     }
 
@@ -82,7 +82,7 @@ class MainViewModel : ViewModel() {
         }
         override fun onLocationAvailability(locationAvailability: LocationAvailability) {
             if (!locationAvailability.isLocationAvailable) {
-                _mainUiState.value = MainUiState.Error("No location available")
+                removeLocationUpdateListener()
             }
         }
     }
@@ -134,16 +134,11 @@ class MainViewModel : ViewModel() {
                                 activity, LocationRequest.PRIORITY_HIGH_ACCURACY
                             )
                         } catch (e: IntentSender.SendIntentException) {
-                            Log.e(MAIN_VIEW_MODEL_TAG, "requestEnableLocation: ${e.message}", e)
+                            Log.e(TAG, "requestEnableLocation: ${e.message}", e)
                         }
                     }
                 }
             }
         }
-    }
-
-    abstract class MainUiState {
-        object Idle                             : MainUiState()
-        data class Error(val message: String)   : MainUiState()
     }
 }
