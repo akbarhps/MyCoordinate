@@ -42,7 +42,7 @@ class MainViewModel : ViewModel() {
             .getFusedLocationProviderClient(activity)
     }
 
-    fun checkLocationPermission() {
+    fun checkLocationAvailability() {
         if (!hasLocationPermission()) {
             requestLocationPermission()
             return
