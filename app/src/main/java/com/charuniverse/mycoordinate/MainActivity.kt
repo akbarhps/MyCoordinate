@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.LocationRequest
+import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
 
@@ -23,6 +24,22 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 it.initViewModel(this)
                 it.checkLocationAvailability()
             }
+
+        buttonClickListener()
+    }
+
+    private fun buttonClickListener() {
+        btnGetLastLoc.setOnClickListener {
+            viewModel.getLastLocation()
+        }
+
+        btnListenLocUpdates.setOnClickListener {
+            viewModel.startLocationUpdateListener()
+        }
+
+        btnRemoveLocUpdates.setOnClickListener {
+            viewModel.removeLocationUpdateListener()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
