@@ -57,6 +57,10 @@ class MainViewModel : ViewModel() {
         listenToLocationUpdates()
     }
 
+    fun removeLocationUpdateListener() {
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
+    }
+
     private fun setUiState(state: String, errorMessage: String = "") {
         _mainUiState.value = when (state) {
             Constants.IDLE_STATE        -> MainUiState.Idle
