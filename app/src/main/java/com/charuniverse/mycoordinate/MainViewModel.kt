@@ -68,7 +68,6 @@ class MainViewModel : ViewModel() {
             it.priority         = LocationRequest.PRIORITY_HIGH_ACCURACY
             it.interval         = Constants.DEFAULT_INTERVAL
             it.fastestInterval  = Constants.FASTEST_INTERVAL
-            it.maxWaitTime      = Constants.MAX_WAIT_TIME
         }
         mFusedLocationClient.requestLocationUpdates(
             mLocationRequest, mLocationCallback,
